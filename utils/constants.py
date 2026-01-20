@@ -33,11 +33,13 @@ PNG_FILE_FILTER = "PNG Files (*.png)"
 
 # UI Constants
 WINDOW_TITLE = "Background Remover AI"
-WINDOW_MIN_WIDTH = 1200
-WINDOW_MIN_HEIGHT = 700
+WINDOW_MIN_WIDTH = 900  # Reduced for better responsiveness
+WINDOW_MIN_HEIGHT = 600  # Reduced for better responsiveness
 WINDOW_DEFAULT_WIDTH = 1400
 WINDOW_DEFAULT_HEIGHT = 800
-CONTROL_PANEL_WIDTH = 360
+CONTROL_PANEL_MIN_WIDTH = 280  # Minimum width instead of fixed
+CONTROL_PANEL_PREFERRED_WIDTH = 360  # Preferred width
+CONTROL_PANEL_MAX_WIDTH = 400  # Maximum width
 
 # Status Messages
 STATUS_INITIALIZING = "🚀 Initializing AI models..."

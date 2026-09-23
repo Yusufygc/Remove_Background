@@ -1,5 +1,16 @@
 # Kayıt Defteri
 
+## [2026-09-24] [REVIEW] | Kurulum Program Files'a alındı (PrivilegesRequired=admin)
+Kullanıcı "Hata 5: Erişim engellendi" hatasını ikinci kez aldı ve Program Files'a kurmak istediğini belirtti.
+
+**Gerçek kök neden (önceki teşhis eksikti):** Installer dosyasının zaman damgası (02:14:56) kullanıcının denemesinden (02:19) önceydi ve registry'de eski kurulum kaydı yoktu — yani düzeltilmiş installer çalışmıştı, varsayılan hedef `{localappdata}\Programs` idi. Kullanıcı sihirbazda hedef klasörü **elle** `C:\Program Files\...` olarak değiştirdi. `PrivilegesRequired=lowest` olduğu için Inno Setup UAC yükseltmesi istemiyordu, dolayısıyla Program Files'a yazma yetkisi yoktu → Hata 5. Yani sorun yolun kendisi değil, yol ile yetki seviyesinin uyuşmamasıydı.
+
+**Düzeltme:** `installer/setup.iss` → `PrivilegesRequired=admin` (kurulum başında UAC istemi çıkar), `DefaultDirName={autopf}\{#MyAppName}` (yönetici modunda `C:\Program Files\...`), `PrivilegesRequiredOverridesAllowed=commandline` (isteyen `/CURRENTUSER` ile yönetici olmadan kullanıcı bazlı da kurabilir), `UninstallDisplayIcon` eklendi.
+
+**Not (Inno Setup davranışı):** Derlenen setup exe'sinin manifest'i `asInvoker`'dır, `requireAdministrator` değil — bu normaldir. Inno Setup yükseltmeyi kendisi yönetir: exe normal başlar, `PrivilegesRequired=admin` ise kendini yükselterek yeniden başlatır. Manifest'e bakarak "admin istemiyor" sonucu çıkarmak yanlış olur.
+
+**Doğrulama:** Sessiz kurulum testi sırasında UAC onaylandı ve kurulum `C:\Program Files\Arka Plan Kaldirici AI`'ya **tamamlandı** (3069 dosya, 788.9 MB, HKLM registry kaydı + Başlat menüsü kısayolu oluştu). Kurulu exe çalıştırıldı, hatasız açıldı. Masaüstü kısayolu yok — `desktopicon` görevi varsayılan olarak işaretsiz (`Flags: unchecked`), sessiz kurulumda seçilmedi; beklenen davranış.
+
 ## [2026-09-24] [REVIEW] | Kurulum sihirbazı "Hata 5: Erişim engellendi" düzeltildi
 Kullanıcı, `installer/output/ArkaPlanKaldiriciAI_Kurulum.exe`'yi elle çalıştırınca ekran görüntüsüyle bildirdi: "C:\Program Files\Arka Plan Kaldirici AI" klasörü oluşturulamadı, "Hata 5: Erişim engellendi". Önceki sessiz (`/VERYSILENT`) testlerim bunu yakalamamıştı çünkü hep `/DIR=` ile geçici bir klasöre override ediyordum — varsayılan klasör hiç test edilmemişti (bu, "yalnızca override edilmiş senaryoyu test ettim" şeklinde bir kör nokta).
 

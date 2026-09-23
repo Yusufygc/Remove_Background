@@ -1,5 +1,14 @@
 # Kayıt Defteri
 
+## [2026-09-24] [REVIEW] | Kurulum sihirbazı "Hata 5: Erişim engellendi" düzeltildi
+Kullanıcı, `installer/output/ArkaPlanKaldiriciAI_Kurulum.exe`'yi elle çalıştırınca ekran görüntüsüyle bildirdi: "C:\Program Files\Arka Plan Kaldirici AI" klasörü oluşturulamadı, "Hata 5: Erişim engellendi". Önceki sessiz (`/VERYSILENT`) testlerim bunu yakalamamıştı çünkü hep `/DIR=` ile geçici bir klasöre override ediyordum — varsayılan klasör hiç test edilmemişti (bu, "yalnızca override edilmiş senaryoyu test ettim" şeklinde bir kör nokta).
+
+**Kök neden:** `installer/setup.iss`'de `DefaultDirName={autopf}\...` kullanılmıştı. `{autopf}` **her zaman** "Program Files" (makine geneli, admin ister) demek — `PrivilegesRequired=lowest` bunu değiştirmiyor, sadece Inno Setup'ın UAC yükseltme istemesini engelliyor. Sonuç: UAC istenmiyor ama hedef klasör hâlâ admin istiyor → yazma başarısız.
+
+**Düzeltme:** `DefaultDirName={localappdata}\Programs\{#MyAppName}` (VS Code/Discord'un kullandığı kullanıcı-bazlı kurulum yöntemi — gerçekten admin gerektirmiyor).
+
+**Doğrulama:** Bu sefer **varsayılan klasörle** (override etmeden) sessiz kurulum yapıldı → `%LOCALAPPDATA%\Programs\Arka Plan Kaldirici AI` oluştu → kurulan exe çalıştırıldı, hatasız açıldı → sessiz kaldırıldı → klasör temizlendi. Kullanıcının karşılaştığı senaryo artık test kapsamında.
+
 ## [2026-09-24] [INGEST] | .exe build alındı + Inno Setup kurulum sihirbazı oluşturuldu
 Kullanıcı isteği: exe oluştur, Inno Setup ile kurulum sihirbazı yap.
 

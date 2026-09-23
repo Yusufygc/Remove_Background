@@ -1,8 +1,8 @@
 """Model Manager using Factory and Repository patterns for AI model management."""
 
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 from rembg import new_session
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 
 
 class ModelManager(QObject):
@@ -10,14 +10,14 @@ class ModelManager(QObject):
     Manages AI model sessions using Factory and Repository patterns.
     Implements Single Responsibility Principle - only responsible for model management.
     """
-    
-    model_loaded = pyqtSignal(str)  # Observer pattern for model loading events
-    all_models_loaded = pyqtSignal()
-    error_occurred = pyqtSignal(str)
+
+    model_loaded = Signal(str)  # Observer pattern for model loading events
+    all_models_loaded = Signal()
+    error_occurred = Signal(str)
     
     def __init__(self):
         super().__init__()
-        self._sessions: Dict[str, any] = {}
+        self._sessions: Dict[str, Any] = {}
         self._available_models = ["isnet-general-use", "u2net", "u2netp", "silueta"]
     
     def load_all_models(self) -> bool:
@@ -49,11 +49,10 @@ class ModelManager(QObject):
             return True  # Model already loaded
         
         try:
-            session = new_session(
-                model_name,
-                alpha_matting=False,
-                post_process_mask=False
-            )
+            # alpha_matting/post_process_mask are remove() parameters, not
+            # new_session() ones (see models/image_processor.py) - they were
+            # dead here before (silently swallowed by new_session's **kwargs).
+            session = new_session(model_name)
             self._sessions[model_name] = session
             self.model_loaded.emit(model_name)
             return True
@@ -61,7 +60,7 @@ class ModelManager(QObject):
             self.error_occurred.emit(f"Failed to load {model_name}: {str(e)}")
             return False
     
-    def get_session(self, model_name: str) -> Optional[any]:
+    def get_session(self, model_name: str) -> Optional[Any]:
         """
         Repository method to retrieve a model session.
         

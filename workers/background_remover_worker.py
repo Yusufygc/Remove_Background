@@ -1,7 +1,8 @@
 """Background removal worker thread using Observer pattern."""
 
 from io import BytesIO
-from PyQt5.QtCore import QThread, pyqtSignal
+from typing import Any
+from PySide6.QtCore import QThread, Signal
 from PIL import Image
 
 from models.image_processor import ImageProcessor
@@ -10,15 +11,15 @@ from models.image_processor import ImageProcessor
 class BackgroundRemoverWorker(QThread):
     """
     Worker thread for background removal processing.
-    Uses Observer pattern via pyqtSignal for communication with UI.
+    Uses Observer pattern via Signal for communication with UI.
     Implements Single Responsibility Principle - only handles background removal.
     """
+
+    finished = Signal(BytesIO)
+    error = Signal(str)
+    progress = Signal(str)
     
-    finished = pyqtSignal(BytesIO)
-    error = pyqtSignal(str)
-    progress = pyqtSignal(str)
-    
-    def __init__(self, input_path: str, model_session: any, processor: ImageProcessor = None):
+    def __init__(self, input_path: str, model_session: Any, processor: ImageProcessor = None):
         """
         Initialize worker.
         

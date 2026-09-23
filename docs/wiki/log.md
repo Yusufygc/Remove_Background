@@ -1,5 +1,22 @@
 # Kayıt Defteri
 
+## [2026-09-24] [REVIEW] | Devre dışı buton kontrastı düzeltildi
+Kullanıcı bildirdi: boşta beklerken (görsel yüklenmeden) "Arka Planı Kaldır" ve "Sonucu Kaydet" butonları arka planla neredeyse aynı renkte, okunmuyordu. Kök neden: `qml/StyledButton.qml` devre dışı durumda `backend.colorSurfaceLight` (`#e7edef`) dolgu + `opacity: 0.6` kullanıyordu — açık temada bu, panel/sayfa arka planına (`#ffffff`/`#f3f6f7`/`#dbe4e6`) neredeyse eşit bir tona düşüyordu; üstüne beyaz ikon da soluk zeminde kayboluyordu.
+
+**Düzeltme:** Devre dışı dolgu `backend.colorBorder` (`#c7d3d6`, belirgin şekilde daha gri) yapıldı, global `opacity` dimming kaldırıldı, `border.width: 1 / border.color: colorTextSecondary` eklendi (şekil her zaman belirgin). İkon artık `ColorOverlay` ile etkin durumda beyaz (`colorOnAccent`), devre dışı durumda `colorTextSecondary` (koyu gri) olarak boyanıyor — önceden sabit beyazdı, açık gri zeminde görünmüyordu.
+
+Doğrulama: uygulama hatasız açıldı (stderr temiz, `engine.warnings` ile de doğrulandı). **Görsel kontrast doğrulaması yapılamadı** (ekran görüntüsü alınamıyor bu ortamda).
+
+## [2026-09-24] [LINT] | Commit kuralı kesinleştirildi: Co-Authored-By asla eklenmez
+Kullanıcı, `8382ab1` commit'inde `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` satırının eklenmiş olmasına itiraz etti ve bunun **hiçbir istisna olmadan** eklenmemesini istedi. `docs/wiki/rules.md` Bölüm 6 güncellendi: önceki "aktif oturum talimatı üstün sayılır" istisnası kaldırıldı, kural mutlak hale getirildi. Zaten push edilmiş `8382ab1` commit'inin düzeltilmesi (`amend` + `push --force`) ayrıca ele alınıyor — bkz kullanıcı onayı.
+
+## [2026-09-24] [INGEST] | Koyu temadan açık/beyaz temaya geçildi
+Kullanıcı isteği: arka plan beyaz tonlarından olsun. Düz bir "background beyaz olsun" değişikliği yetmezdi — koyu temadaki `primary`/`success`/`warning`/`error`/`accent` renkleri, koyu zemin üstünde okunacak şekilde tasarlanmıştı; aynı değerler beyaz zemine taşınsa metin/ikon rengi olarak kullanıldıkları yerlerde (durum metni, ipuçları başlığı/ikonu) kontrast neredeyse kaybolurdu. Bu yüzden `utils/constants.py::COLORS` tam bir açık tema seti olarak yeniden tanımlandı: `background` `#f3f6f7` (hafif petrol-gri beyaz), `surface` `#ffffff`, `text` `#132226` (koyu petrol-siyah), `border`/`text_secondary` açık-orta gri; `primary`/`success`/`warning`/`error`/`accent` aynı ton ailesinde ama **koyulaştırılmış** hallerine çekildi (`#17c3d4`→`#0e8a99` vb.) — böylece hem buton zemini hem de düz metin/ikon rengi olarak beyazda okunaklı kalıyorlar. Gölge alfa değerleri de (`button_shadow`/`panel_shadow`) koyu temadaki sert siyah gölgeden (0.31/0.47) açık temaya uygun yumuşak gölgeye (0.18/0.12) çekildi.
+
+Yeni bir tasarım sorunu ortaya çıktı: butonların (`StyledButton.qml`) etiket rengi `backend.colorText` kullanıyordu — bu artık koyu (gövde metni için doğru) ama renkli buton zeminlerinin üstünde beyaz yazı gerekiyor. Çözüm: `COLORS['on_accent'] = '#ffffff'` eklendi, `Backend.colorOnAccent` Property'si oluşturuldu, `StyledButton.qml`'de etkin buton etiketi `colorText` yerine `colorOnAccent`'a bağlandı — gövde metni (tema moduna göre otomatik uyarlanan `colorText`) ile buton-üstü metin (her zaman beyaz kalan `colorOnAccent`) ayrıştırıldı.
+
+Doğrulama: `python -m py_compile`; hem açılış (force-kill ile) hem **doğal kapanış** (geçici `QTimer` ile, madde 14'teki ders uygulanarak) test edildi — ikisi de temiz (`HasExited: False` / `ExitCode: 0`, stderr boş). **Görsel doğrulama yapılamadı** (bu ortamda ekran görüntüsü alınamıyor).
+
 ## [2026-09-24] [REVIEW] | Kapanışta konsola düşen "Cannot read property of null" hataları düzeltildi
 Kullanıcı bildirdi: uygulama çalışırken sorun yok ama **pencere kapatıldıktan sonra** konsola onlarca `TypeError: Cannot read property 'X' of null` düşüyordu (tüm `backend.*` erişimleri). Kök neden: `main.py::main()`'da `app.exec()` dönünce fonksiyon `sys.exit()` ile çıkarken Python yerel değişkenleri (`app`, `backend`, `engine`) garbage-collect ediyordu — sıra garanti değildi. `backend` (QML'e context property olarak verilen QObject), QML motoru (`engine`, dolayısıyla pencere/component ağacı) hâlâ ayaktayken önce silinirse, kapanış sırasında QML'in kendi son binding yeniden-değerlendirmeleri artık ölü olan C++ nesnesine erişip her property için ayrı bir hata basıyordu.
 

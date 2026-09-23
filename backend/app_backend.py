@@ -81,6 +81,7 @@ class Backend(QObject):
     colorTextSecondary = Property(str, lambda self: COLORS['text_secondary'], constant=True)
     colorBorder = Property(str, lambda self: COLORS['border'], constant=True)
     colorAccent = Property(str, lambda self: COLORS['accent'], constant=True)
+    colorOnAccent = Property(str, lambda self: COLORS['on_accent'], constant=True)
     colorTipsBackground = Property(str, lambda self: COLORS['tips_background'], constant=True)
     colorTipsBorder = Property(str, lambda self: COLORS['tips_border'], constant=True)
     colorButtonShadow = Property(str, lambda self: COLORS['button_shadow'], constant=True)

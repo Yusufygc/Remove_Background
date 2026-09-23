@@ -8,27 +8,29 @@ def _with_alpha(hex_color: str, alpha: float) -> str:
 
 
 # Color Palette — single source of truth for every color used in the UI.
-# Derived from ui/thema/*.jpg (dominant-color extraction via PIL quantize):
-# deep near-black petrol/teal and navy-blue leather/fabric textures.
+# Light theme: white/near-white surfaces (kept the petrol-teal/navy hue
+# identity from ui/thema/*.jpg, but darkened the semantic colors so they
+# stay readable as TEXT on a light background, not just as button fills).
 COLORS = {
-    'primary': '#17c3d4',       # vivid petrol teal (brightened from ui/thema base hue)
-    'primary_hover': '#0fa3b3',
-    'success': '#22e0a0',       # vivid teal-green
-    'warning': '#ffb443',       # vivid gold
-    'error': '#ff5c5c',         # vivid red
-    'background': '#070f14',    # near-black petrol (darkest shadow tone across all 5 images)
-    'surface': '#0f232c',       # dark petrol panel
-    'surface_light': '#1c3d4a', # lighter petrol-teal (hover)
-    'surface_dark': '#050b0f',  # darkest, for panel gradient bottom
-    'text': '#eef5f5',
-    'text_secondary': '#8fa8ac',
-    'border': '#28454f',
-    'accent': '#2f8fe6',        # vivid blue (brightened from ui/thema navy hue)
+    'primary': '#0e8a99',       # deep teal — readable as text/icon on white
+    'primary_hover': '#0b6f7a',
+    'success': '#128a5e',       # deep teal-green
+    'warning': '#c07a12',       # deep amber
+    'error': '#d33d3d',         # clear red
+    'background': '#f3f6f7',    # soft off-white with a faint petrol-gray tint
+    'surface': '#ffffff',       # cards/panels: pure white
+    'surface_light': '#e7edef', # light gray-teal hover/disabled bg
+    'surface_dark': '#dbe4e6',  # slightly deeper light tone (panel gradient bottom)
+    'text': '#132226',          # near-black petrol-dark — high contrast on white
+    'text_secondary': '#5c7075',
+    'border': '#c7d3d6',
+    'accent': '#1f6fc9',        # deep vivid blue — readable as text/icon on white
+    'on_accent': '#ffffff',     # text/icon color for content drawn ON a colored button
 }
 COLORS['tips_background'] = _with_alpha(COLORS['primary'], 0.08)
 COLORS['tips_border'] = _with_alpha(COLORS['primary'], 0.30)
-COLORS['button_shadow'] = _with_alpha('#000000', 0.31)
-COLORS['panel_shadow'] = _with_alpha('#000000', 0.47)
+COLORS['button_shadow'] = _with_alpha('#000000', 0.18)
+COLORS['panel_shadow'] = _with_alpha('#000000', 0.12)
 
 # Available AI Models
 AVAILABLE_MODELS = ["isnet-general-use", "u2net", "u2netp", "silueta"]

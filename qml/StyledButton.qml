@@ -16,10 +16,11 @@ Rectangle {
 
     implicitHeight: 48
     radius: 12
-    opacity: enabled ? 1.0 : 0.6
     color: !enabled
-        ? backend.colorSurfaceLight
+        ? backend.colorBorder
         : (mouseArea.pressed ? buttonColor : (mouseArea.containsMouse ? Qt.lighter(buttonColor, 1.15) : buttonColor))
+    border.width: enabled ? 0 : 1
+    border.color: backend.colorTextSecondary
 
     layer.enabled: true
     layer.effect: DropShadow {
@@ -35,17 +36,25 @@ Rectangle {
         spacing: 8
 
         Image {
-            anchors.verticalCenter: parent.verticalCenter
-            visible: root.icon !== ""
+            id: iconImg
             source: root.icon
             sourceSize.width: 18
             sourceSize.height: 18
+            visible: false
+        }
+        ColorOverlay {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: root.icon !== ""
+            width: 18
+            height: 18
+            source: iconImg
+            color: root.enabled ? backend.colorOnAccent : backend.colorTextSecondary
         }
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: root.label
-            color: root.enabled ? backend.colorText : backend.colorTextSecondary
+            color: root.enabled ? backend.colorOnAccent : backend.colorTextSecondary
             font.pixelSize: 14
             font.bold: true
         }

@@ -1,5 +1,16 @@
 # Kayıt Defteri
 
+## [2026-09-24] [REVIEW] | Exe açılışta çöküyordu: pymatting metadata'sı eksikti
+Kullanıcı, Program Files'a kurulan uygulamayı masaüstü kısayolundan açınca hata penceresi aldı: `importlib.metadata.PackageNotFoundError: No package metadata was found for pymatting`.
+
+**Kök neden:** `pymatting/__init__.py:11` açılışta `__version__ = importlib.metadata.version(__name__)` çağırıyor. PyInstaller paketlerin `*.dist-info` metadata klasörlerini **varsayılan olarak paketlemez**; modül kodu geliyor ama metadata gelmiyor, bu çağrı patlıyor. Zincir: `main.py` → `backend/app_backend.py` → `models/model_manager.py` → `rembg` → `rembg/bg.py` → `pymatting`. Kaynaktan çalışırken sorun yok çünkü `.venv` içinde dist-info mevcut.
+
+**Düzeltme:** Build komutuna `--copy-metadata pymatting --copy-metadata onnxruntime` eklendi (`onnxruntime` de metadata sorguluyor ama guard'lı; ucuz sigorta). Bağımlılık ağacı `importlib.metadata`/`pkg_resources` kullanımı için tarandı: sadece `pymatting` (import anında, guard'sız), `onnxruntime` (guard'lı) ve `jsonschema` (lazy `__getattr__`, import anında çalışmıyor) çıktı.
+
+**Test yöntemi hatası (önemli):** Bu hatayı önceki doğrulamalarım yakalayamadı çünkü `--windowed` modda Python traceback'i stderr'e değil bir hata penceresine gidiyor ve süreç o pencerede canlı kalıyor — yani ölçütüm olan "`HasExited: False` + stderr boş" **yanlış pozitif** veriyordu. Uygulamanın çalıştığını sandım, oysa açılış hatası penceresi gösteriyordu.
+
+**Yeni yöntem:** Aynı parametrelerle önce `--console` bir test build'i alınıp stderr okunuyor (console modda traceback stderr'e düşüyor), temizse `--windowed` asıl build alınıyor. Bu geçişte uygulandı: console build'de `pymatting-1.1.16.dist-info` + `onnxruntime-1.23.2.dist-info` paketin içinde doğrulandı, çalıştırmada stdout/stderr tamamen boş (traceback yok). README'ye de bu yöntem not düşüldü.
+
 ## [2026-09-24] [REVIEW] | Kurulum Program Files'a alındı (PrivilegesRequired=admin)
 Kullanıcı "Hata 5: Erişim engellendi" hatasını ikinci kez aldı ve Program Files'a kurmak istediğini belirtti.
 

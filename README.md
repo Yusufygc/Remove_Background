@@ -47,12 +47,22 @@ pyinstaller --noconfirm --windowed --name "ArkaPlanKaldiriciAI" ^
   --add-data "qml;qml" ^
   --add-data "icons;icons" ^
   --add-data ".venv\Lib\site-packages\PySide6\qml;PySide6\qml" ^
+  --copy-metadata pymatting ^
+  --copy-metadata onnxruntime ^
   main.py
 ```
+
+> `--copy-metadata pymatting` **zorunlu**: `pymatting/__init__.py` açılışta `importlib.metadata.version(__name__)` çağırıyor, paket metadata'sı (`*.dist-info`) exe'ye girmezse uygulama `PackageNotFoundError: No package metadata was found for pymatting` ile açılmadan çöker. `onnxruntime` de metadata sorguluyor (guard'lı, ama eklemek ucuz sigorta).
 
 > `--add-data` Windows'ta `KAYNAK;HEDEF` biçiminde (`;`), Linux/macOS'ta `KAYNAK:HEDEF` (`:`) kullanır. `--collect-all PySide6` **kullanmayın** — tüm Qt modüllerini (Qt3D, QtCharts, QtDBus, ...) gereksiz yere paketleyip build'i çok büyütür/yavaşlatır; yukarıdaki hedefli `--add-data` yeterli.
 
 Çıktı `dist/ArkaPlanKaldiriciAI/` klasöründe oluşur (~790 MB, çoğu `onnxruntime`/`scipy`/`numpy` DLL'leri).
+
+> **Build'i test ederken:** `--windowed` modda Python hataları stderr'e değil, bir hata penceresine gider; süreç de o pencerede canlı kaldığı için "süreç ayakta = sorunsuz" varsayımı yanıltıcıdır. Gerçek doğrulama için aynı parametrelerle `--console` bir test build'i alıp stderr'i okuyun:
+>
+> ```bash
+> pyinstaller --noconfirm --console --name "TestConsole" <ayni --add-data/--copy-metadata parametreleri> main.py
+> ```
 
 ## Kurulum Sihirbazı (Inno Setup)
 

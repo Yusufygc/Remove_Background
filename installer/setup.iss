@@ -15,7 +15,10 @@ AppId={{B4B6C6C0-6E1D-4F1A-9C4E-2E5F6A1B7C90}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={autopf}\{#MyAppName}
+; {autopf} her zaman "Program Files" demektir (admin gerektirir), PrivilegesRequired=lowest
+; bunu degistirmez - sadece UAC istemini kapatir. Admin olmadan yazilabilen bir yer icin
+; kullanici bazli {localappdata}\Programs kullaniliyor (VS Code/Discord ile ayni yontem).
+DefaultDirName={localappdata}\Programs\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=output

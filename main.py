@@ -8,12 +8,25 @@ import sys
 # loading if Qt loads first (see docs/wiki/code-review-2026-09-24.md, bulgu 8).
 import onnxruntime  # noqa: F401
 
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QUrl
 from PySide6.QtQuickControls2 import QQuickStyle
 
 from backend.app_backend import Backend
+
+
+def resource_path(*parts: str) -> str:
+    """
+    Resolve a path to a bundled resource (qml/, icons/), working both when
+    run from source and when frozen into an .exe (PyInstaller extracts
+    bundled data files to sys._MEIPASS at runtime).
+    """
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        base_dir = sys._MEIPASS
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_dir, *parts)
 
 
 def main():
@@ -24,12 +37,13 @@ def main():
         QQuickStyle.setStyle("Basic")
 
         app = QGuiApplication(sys.argv)
+        app.setWindowIcon(QIcon(resource_path("icons", "app_icon.ico")))
 
         backend = Backend()
         engine = QQmlApplicationEngine()
         engine.rootContext().setContextProperty("backend", backend)
 
-        qml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qml", "Main.qml")
+        qml_path = resource_path("qml", "Main.qml")
         engine.load(QUrl.fromLocalFile(qml_path))
 
         if not engine.rootObjects():

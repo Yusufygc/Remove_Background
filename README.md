@@ -36,6 +36,21 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## .exe Paketleme (PyInstaller)
+
+`main.py::resource_path()`, kaynak dosyaları (`qml/`, `icons/`) hem `python main.py` ile hem de dondurulmuş (frozen) bir `.exe` içinden doğru şekilde bulacak şekilde yazıldı (PyInstaller çalışırken `sys._MEIPASS` kullanılır). Henüz `pyinstaller` kurulmadı/build alınmadı; kurulunca örnek komut:
+
+```bash
+pip install pyinstaller
+pyinstaller --noconfirm --windowed --name "ArkaPlanKaldiriciAI" ^
+  --icon icons\app_icon.ico ^
+  --add-data "qml;qml" ^
+  --add-data "icons;icons" ^
+  main.py
+```
+
+> `--add-data` Windows'ta `KAYNAK;HEDEF` biçiminde (`;`), Linux/macOS'ta `KAYNAK:HEDEF` (`:`) kullanır.
+
 ## Proje Mimarisi (OOP + SOLID)
 
 Kod tabanı, sorumlulukları ayıracak şekilde katmanlara bölündü ve genişletilebilir hale getirildi.
@@ -59,6 +74,9 @@ Kod tabanı, sorumlulukları ayıracak şekilde katmanlara bölündü ve genişl
 ```
 RemoveBG/
 ├── main.py
+├── icons/
+│   ├── app_icon.png      # uygulama/pencere ikonu (kaynak)
+│   └── app_icon.ico      # Windows .exe ikonu (çok boyutlu)
 ├── backend/
 │   └── app_backend.py
 ├── qml/

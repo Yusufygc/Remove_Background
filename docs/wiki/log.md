@@ -1,5 +1,18 @@
 # Kayıt Defteri
 
+## [2026-09-24] [INGEST] | .exe paketleme hazırlığı: path düzeltmesi + uygulama ikonu
+Kullanıcı isteği: uygulamayı PyInstaller ile `.exe`'ye çevirmeye hazırla, projeye uygun bir ikon bul.
+
+- `main.py`'ye `resource_path(*parts)` yardımcı fonksiyonu eklendi: `sys.frozen`/`sys._MEIPASS` kontrolü ile hem `python main.py` hem donmuş `.exe` içinde doğru taban dizini bulur. `qml_path` bunu kullanacak şekilde güncellendi.
+- İkon: proje bağlamına (AI destekli fotoğraf arka planı kaldırma) uygun bir "fotoğraf çerçevesi + dağ silüeti + AI sparkle" ikonu, mevcut tema rengiyle (`#0e8a99` petrol teal + beyaz) PIL ile çizildi (harici asset/kütüphane yok, tamamen kod ile üretildi). Önce taslak PNG üretilip Read tool ile görsel olarak kontrol edildi, sonra onaylanan tasarım `icons/app_icon.png` (512×512 kaynak) ve `icons/app_icon.ico` (16-256px çok boyutlu, Windows exe ikonu) olarak kaydedildi.
+- `main.py`'de `app.setWindowIcon(QIcon(resource_path("icons", "app_icon.ico")))` eklendi — pencere/taskbar ikonu artık ayarlanıyor (önceki QML `ApplicationWindow.icon` denemesi bu Qt sürümünde başarısız olmuştu, bkz [[code-review-2026-09-24]]; bu sefer Python tarafında `QGuiApplication.setWindowIcon` ile yapıldı, çalıştı).
+- `.gitignore`'a `build/`, `dist/`, `*.spec` eklendi (gelecekteki PyInstaller çıktıları için).
+- `README.md`'ye PyInstaller build komutu örneği eklendi (`--add-data`, `--icon`). **`pyinstaller` henüz kurulmadı, build alınmadı** — sadece hazırlık yapıldı, kullanıcı istemedikçe kurulum/build çalıştırılmadı.
+
+**Önemli:** Kullanıcı ikonu kendisi inceleyecek ("ben kontrol ederim sonra iconu") — henüz onaylanmadı, değiştirilebilir.
+
+Doğrulama: `QIcon(...).isNull()` → `False`, `availableSizes()` 7 boyut listeledi. Uygulama hem açılışta hem doğal kapanışta hatasız (stderr boş).
+
 ## [2026-09-24] [REVIEW] | Devre dışı buton kontrastı düzeltildi
 Kullanıcı bildirdi: boşta beklerken (görsel yüklenmeden) "Arka Planı Kaldır" ve "Sonucu Kaydet" butonları arka planla neredeyse aynı renkte, okunmuyordu. Kök neden: `qml/StyledButton.qml` devre dışı durumda `backend.colorSurfaceLight` (`#e7edef`) dolgu + `opacity: 0.6` kullanıyordu — açık temada bu, panel/sayfa arka planına (`#ffffff`/`#f3f6f7`/`#dbe4e6`) neredeyse eşit bir tona düşüyordu; üstüne beyaz ikon da soluk zeminde kayboluyordu.
 

@@ -8,7 +8,8 @@ PySide6 + QML masaüstü uygulaması. `rembg` (ONNX tabanlı) modelleriyle görs
 
 | Katman | Dosya | Sorumluluk |
 |---|---|---|
-| Giriş noktası | `main.py` | `QGuiApplication` + `QQmlApplicationEngine` kurulumu, `Backend` oluşturma, `qml/Main.qml` yükleme |
+| Giriş noktası | `main.py` | `QGuiApplication` + `QQmlApplicationEngine` kurulumu, `Backend` oluşturma, `qml/Main.qml` yükleme, `resource_path()` ile hem kaynaktan hem PyInstaller `.exe`'den çalışacak yol çözümlemesi |
+| İkon | `icons/app_icon.png`, `icons/app_icon.ico` | Uygulama/pencere ikonu (`app.setWindowIcon`) + `.exe` build ikonu |
 | Backend köprüsü | `backend/app_backend.py` | `Backend(QObject)` — domain katmanını Property/Signal/Slot ile QML'e bağlar (Facade) |
 | QML UI | `qml/Main.qml` | `ApplicationWindow` — pencere düzeni, dosya diyalogları, hata dialogu |
 | QML UI | `qml/ControlPanel.qml` | Sol panel: model seçimi, aksiyon butonları, tips card |

@@ -1,5 +1,20 @@
 # Kayıt Defteri
 
+## [2026-09-24] [INGEST] | .exe build alındı + Inno Setup kurulum sihirbazı oluşturuldu
+Kullanıcı isteği: exe oluştur, Inno Setup ile kurulum sihirbazı yap.
+
+**PyInstaller build:** `.venv`'e `pyinstaller` kuruldu. İlk denemede `--collect-all PySide6` kullanıldı ama bu tüm Qt modüllerini (Qt3D, QtCharts, QtDBus, QtHelp, ...) gereksiz yere topluyordu — build'i çok yavaşlatıp şişiriyordu, iptal edildi (`TaskStop`). Yerine hedefli yaklaşım: PyInstaller'ın otomatik `hook-PySide6.*` tespiti + `--add-data ".venv\Lib\site-packages\PySide6\qml;PySide6\qml"` (sadece QML plugin binary'leri, 31MB — QML importları Python import'u olmadığı için statik analiz bunları bulamıyor, elle eklenmesi gerekiyor). Sonuç: `dist/ArkaPlanKaldiriciAI/` (~791MB, çoğu onnxruntime/scipy/numpy DLL'leri — bunlar rembg'nin transitive bağımlılığı, paketleme seçeneğinden bağımsız kaçınılmaz).
+
+**İkon:** `app.setWindowIcon` zaten çalışıyordu (önceki kayıt); PyInstaller `--icon icons\app_icon.ico` ile .exe dosyasının kendi simgesi de aynı ikonla ayarlandı.
+
+**Doğrulama:** Build edilen `.exe` doğrudan çalıştırıldı — hatasız açıldı (`HasExited: False`, stderr boş).
+
+**Inno Setup:** `ISCC.exe` zaten kurulu bulundu (`C:\Program Files (x86)\Inno Setup 6`), yeni kurulum gerekmedi. `installer/setup.iss` yazıldı: Türkçe+İngilizce dil seçimi, admin gerektirmeyen (`PrivilegesRequired=lowest`) kullanıcı bazlı kurulum, opsiyonel masaüstü kısayolu, `lzma2/max` sıkıştırma. Derlendi → `installer/output/ArkaPlanKaldiriciAI_Kurulum.exe` (208MB, 791MB'den sıkıştırılmış).
+
+**Uçtan uca doğrulama:** Kurulum dosyası `/VERYSILENT` ile geçici bir test klasörüne kuruldu → kurulan `.exe` çalıştırıldı, hatasız açıldı → `unins000.exe` ile `/VERYSILENT` sessiz kaldırıldı → test klasörü temizlendi. Kalıntı bırakılmadı.
+
+`.gitignore`'a `installer/output/` eklendi (büyük binary, repoya girmez — `installer/setup.iss` script'i commit edilir, üretilen `.exe` edilmez). README'ye her iki adımın (PyInstaller + Inno Setup) komutları eklendi.
+
 ## [2026-09-24] [INGEST] | .exe paketleme hazırlığı: path düzeltmesi + uygulama ikonu
 Kullanıcı isteği: uygulamayı PyInstaller ile `.exe`'ye çevirmeye hazırla, projeye uygun bir ikon bul.
 

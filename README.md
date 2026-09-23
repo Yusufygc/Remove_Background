@@ -38,7 +38,7 @@ python main.py
 
 ## .exe Paketleme (PyInstaller)
 
-`main.py::resource_path()`, kaynak dosyaları (`qml/`, `icons/`) hem `python main.py` ile hem de dondurulmuş (frozen) bir `.exe` içinden doğru şekilde bulacak şekilde yazıldı (PyInstaller çalışırken `sys._MEIPASS` kullanılır). Henüz `pyinstaller` kurulmadı/build alınmadı; kurulunca örnek komut:
+`main.py::resource_path()`, kaynak dosyaları (`qml/`, `icons/`) hem `python main.py` ile hem de dondurulmuş (frozen) bir `.exe` içinden doğru şekilde bulacak şekilde yazıldı (PyInstaller çalışırken `sys._MEIPASS` kullanılır). Build komutu (PySide6'nın QML plugin'lerini de eklemek gerekiyor, yoksa `.exe` QML modüllerini bulamaz):
 
 ```bash
 pip install pyinstaller
@@ -46,10 +46,23 @@ pyinstaller --noconfirm --windowed --name "ArkaPlanKaldiriciAI" ^
   --icon icons\app_icon.ico ^
   --add-data "qml;qml" ^
   --add-data "icons;icons" ^
+  --add-data ".venv\Lib\site-packages\PySide6\qml;PySide6\qml" ^
   main.py
 ```
 
-> `--add-data` Windows'ta `KAYNAK;HEDEF` biçiminde (`;`), Linux/macOS'ta `KAYNAK:HEDEF` (`:`) kullanır.
+> `--add-data` Windows'ta `KAYNAK;HEDEF` biçiminde (`;`), Linux/macOS'ta `KAYNAK:HEDEF` (`:`) kullanır. `--collect-all PySide6` **kullanmayın** — tüm Qt modüllerini (Qt3D, QtCharts, QtDBus, ...) gereksiz yere paketleyip build'i çok büyütür/yavaşlatır; yukarıdaki hedefli `--add-data` yeterli.
+
+Çıktı `dist/ArkaPlanKaldiriciAI/` klasöründe oluşur (~790 MB, çoğu `onnxruntime`/`scipy`/`numpy` DLL'leri).
+
+## Kurulum Sihirbazı (Inno Setup)
+
+`installer/setup.iss`, PyInstaller çıktısını (`dist/ArkaPlanKaldiriciAI/`) tek bir `.exe` kurulum dosyasına paketler (Türkçe arayüzlü, masaüstü kısayolu opsiyonel, admin gerektirmez). Önce yukarıdaki PyInstaller build'i alınmış olmalı, sonra:
+
+```bash
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\setup.iss
+```
+
+Çıktı: `installer/output/ArkaPlanKaldiriciAI_Kurulum.exe`. (Bu klasör `.gitignore`'da — repo'ya commit edilmez, her seferinde yerel olarak üretilir.)
 
 ## Proje Mimarisi (OOP + SOLID)
 
@@ -77,6 +90,8 @@ RemoveBG/
 ├── icons/
 │   ├── app_icon.png      # uygulama/pencere ikonu (kaynak)
 │   └── app_icon.ico      # Windows .exe ikonu (çok boyutlu)
+├── installer/
+│   └── setup.iss         # Inno Setup kurulum sihirbazı betiği
 ├── backend/
 │   └── app_backend.py
 ├── qml/
